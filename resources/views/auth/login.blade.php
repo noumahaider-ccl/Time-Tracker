@@ -102,7 +102,7 @@
         <div class="card">
             <div class="card-header">
                 <h1 class="logo">Time Tracker</h1>
-                <p class="mb-0">Project Management Tool</p>
+                <!-- <p class="mb-0">Project Management Tool</p> -->
             </div>
             
             <div class="card-body p-4">

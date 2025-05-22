@@ -53,7 +53,7 @@ class AuthController extends Controller
             } elseif ($user->isProjectManager()) {
                 return redirect()->route('manager.dashboard');
             } elseif ($user->isClient()) {
-                return redirect()->route('client.dashboard');
+                return redirect()->route('user.dashboard');
             }
         }
 

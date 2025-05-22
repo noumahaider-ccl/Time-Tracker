@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Project;
+use App\Models\UserInvitation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -71,13 +72,13 @@ class UserController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => 'required|string|email|max:255|unique:users|unique:user_invitations',
             'role_id' => 'required|exists:roles,id',
-            'password' => ['required', Password::defaults()],
             'company' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:500',
             'profile_photo' => 'nullable|image|max:2048',
+            'send_invitation' => 'boolean',
         ]);
 
         if ($validator->fails()) {
@@ -94,13 +95,35 @@ class UserController extends Controller
             $userData['profile_photo'] = $path;
         }
 
-        // Create the user
-        $user = User::create($userData);
+        // Check if admin wants to send invitation
+        if ($request->boolean('send_invitation', true)) {
+            // Create invitation instead of user directly
+            $invitation = UserInvitation::create([
+                'email' => $userData['email'],
+                'token' => UserInvitation::generateToken(),
+                'name' => $userData['name'],
+                'role_id' => $userData['role_id'],
+                'company' => $userData['company'] ?? null,
+                'phone' => $userData['phone'] ?? null,
+                'address' => $userData['address'] ?? null,
+                'profile_photo' => $userData['profile_photo'] ?? null,
+                'invited_by' => auth()->id(),
+                'expires_at' => now()->addDays(7), // 7 days to accept invitation
+            ]);
 
-        // TODO: Send welcome email with password setup link
+            // Send invitation email
+            \Mail::to($invitation->email)->send(new \App\Mail\UserInvitationMail($invitation));
 
-        return redirect()->route('admin.users.index')
-            ->with('success', 'User created successfully.');
+            return redirect()->route('admin.users.index')
+                ->with('success', 'User invitation sent successfully to ' . $invitation->email);
+        } else {
+            // Create user directly with a temporary password (old method for backward compatibility)
+            $userData['password'] = Hash::make('TempPassword123!'); // They'll need to reset it
+            $user = User::create($userData);
+
+            return redirect()->route('admin.users.index')
+                ->with('success', 'User created successfully. Please provide them with temporary password: TempPassword123!');
+        }
     }
 
     /**

@@ -54,9 +54,27 @@
                     </div>
                     
                     <div class="col-md-6 mb-3">
+                        <label for="password" class="form-label">Account Setup Method</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="setup_method" id="send_invitation" value="invitation" checked onchange="togglePasswordField()">
+                            <label class="form-check-label" for="send_invitation">
+                                <strong>Send Invitation Email (Recommended)</strong><br>
+                                <small class="text-muted">User will receive an email to set up their own password</small>
+                            </label>
+                        </div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="radio" name="setup_method" id="set_password" value="password" onchange="togglePasswordField()">
+                            <label class="form-check-label" for="set_password">
+                                <strong>Set Password Now</strong><br>
+                                <small class="text-muted">Create account immediately with admin-defined password</small>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3" id="password_field" style="display: none;">
                         <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
                         <div class="input-group">
-                            <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password" required>
+                            <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password">
                             <button class="btn btn-outline-secondary" type="button" id="togglePassword">
                                 <i class='bx bx-show'></i>
                             </button>
@@ -105,9 +123,9 @@
                 
                 <div class="mb-3">
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="send_invitation" name="send_invitation" checked>
-                        <label class="form-check-label" for="send_invitation">
-                            Send email invitation to user
+                        <input class="form-check-input" type="checkbox" id="send_welcome_email" name="send_welcome_email" checked>
+                        <label class="form-check-label" for="send_welcome_email">
+                            Send welcome email to user
                         </label>
                     </div>
                 </div>
@@ -124,6 +142,20 @@
 
 @push('scripts')
 <script>
+    function togglePasswordField() {
+        const sendInvitation = document.getElementById('send_invitation').checked;
+        const passwordField = document.getElementById('password_field');
+        const passwordInput = document.getElementById('password');
+        
+        if (sendInvitation) {
+            passwordField.style.display = 'none';
+            passwordInput.removeAttribute('required');
+        } else {
+            passwordField.style.display = 'block';
+            passwordInput.setAttribute('required', 'required');
+        }
+    }
+    
     // Toggle password visibility
     document.getElementById('togglePassword').addEventListener('click', function() {
         const passwordInput = document.getElementById('password');

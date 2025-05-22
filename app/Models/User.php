@@ -103,4 +103,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(Project::class, 'manager_id');
     }
+
+    /**
+     * Get the time entries for this user.
+     */
+    public function timeEntries()
+    {
+        return $this->hasMany(TimeEntry::class);
+    }
+
+    /**
+     * Get the active time session for this user.
+     */
+    public function activeTimeSession()
+    {
+        return $this->hasOne(ActiveTimeSession::class);
+    }
 }
